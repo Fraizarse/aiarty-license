@@ -3,7 +3,7 @@ Aiarty License Server
 Compatible with AppSumo Licensing API v2
 """
 
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, Response
 import json
 
 app = Flask(__name__)
@@ -17,6 +17,9 @@ LICENSE_KEYS = {
 
 licenses_db = {}
 
+def make_response(data):
+    return Response(json.dumps(data), status=200, mimetype='application/json')
+
 @app.route('/')
 def index():
     return send_file('index.html')
@@ -24,40 +27,40 @@ def index():
 @app.route('/api/appsumo/activate', methods=['POST', 'GET'])
 def activate():
     if request.method == 'GET':
-        return jsonify({"message": "Success", "redirect_url": RAILWAY_URL}), 200
+        return make_response({"message": "success", "redirect_url": RAILWAY_URL})
     data = request.json or {}
     license_key = data.get('license_key', '')
     licenses_db[license_key] = {'status': 'active', 'tier': data.get('tier', 1)}
-    return jsonify({"message": "Success", "redirect_url": f"{RAILWAY_URL}/?license={license_key}"}), 200
+    return make_response({"message": "success", "redirect_url": f"{RAILWAY_URL}/?license={license_key}"})
 
 @app.route('/api/appsumo/deactivate', methods=['POST', 'GET'])
 def deactivate():
     if request.method == 'GET':
-        return jsonify({"message": "Success"}), 200
+        return make_response({"message": "success"})
     data = request.json or {}
     license_key = data.get('license_key', '')
     if license_key in licenses_db:
         licenses_db[license_key]['status'] = 'deactivated'
-    return jsonify({"message": "Success"}), 200
+    return make_response({"message": "success"})
 
 @app.route('/api/appsumo/enhance_tier', methods=['POST', 'GET'])
 def enhance_tier():
     if request.method == 'GET':
-        return jsonify({"message": "Success", "redirect_url": RAILWAY_URL}), 200
+        return make_response({"message": "success", "redirect_url": RAILWAY_URL})
     data = request.json or {}
     license_key = data.get('license_key', '')
     licenses_db[license_key] = {'status': 'active', 'tier': data.get('tier', 1)}
-    return jsonify({"message": "Success", "redirect_url": f"{RAILWAY_URL}/?license={license_key}"}), 200
+    return make_response({"message": "success", "redirect_url": f"{RAILWAY_URL}/?license={license_key}"})
 
 @app.route('/api/appsumo/reduce_tier', methods=['POST', 'GET'])
 def reduce_tier():
     if request.method == 'GET':
-        return jsonify({"message": "Success"}), 200
+        return make_response({"message": "success"})
     data = request.json or {}
     license_key = data.get('license_key', '')
     if license_key in licenses_db:
         licenses_db[license_key]['tier'] = data.get('tier', 1)
-    return jsonify({"message": "Success"}), 200
+    return make_response({"message": "success"})
 
 @app.route('/api/redeem', methods=['POST'])
 def redeem():
